@@ -1,0 +1,13 @@
+# Python
+venv*/
+*.py[cdo]
+*.egg-info
+__pycache__
+build/
+dist/
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
