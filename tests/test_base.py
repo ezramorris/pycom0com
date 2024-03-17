@@ -1,10 +1,10 @@
-from typing import List
+from typing import Dict, List
 from unittest import TestCase
 
-from com0com.base import Port, PortPair, Com0comBase
+from com0com.base import PortPair, Com0comBase
 
 
-DUMMY_PORT_PAIR = PortPair(Port('CNCA1'), Port('CNCB1'))
+DUMMY_PORT_PAIR = PortPair('CNCA1', 'CNCB1')
 
 
 # Function that does nothing.
@@ -19,10 +19,11 @@ class Com0comDummy(Com0comBase):
     enable_all = nop
     change_params = nop
 
-    def install_pair(self, a_params: dict, b_params: dict) -> PortPair:
+    def install_pair(self, a_params: Dict[str, str], 
+                     b_params: Dict[str, str]) -> PortPair:
         return DUMMY_PORT_PAIR
     
-    def list_ports(self):
+    def list_ports(self) -> Dict[str, Dict[str, str]]:
         return {
             DUMMY_PORT_PAIR.a: {'foo': 'aaa'},
             DUMMY_PORT_PAIR.b: {'foo': 'bbb'}
@@ -34,7 +35,7 @@ class Com0comDummy(Com0comBase):
 
 class PortPairTestCase(TestCase):
     def test_pair_number(self):
-        pp = PortPair(Port('CNCA1'), Port('CNCB1'))
+        pp = PortPair('CNCA1', 'CNCB1')
         self.assertEqual(pp.pair_number, 1)
 
 

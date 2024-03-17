@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from collections import namedtuple
-from typing import List
+from typing import List, Dict
 
 
 _AVAILABLE_PARAMS_DOC = """
@@ -38,21 +38,17 @@ _AVAILABLE_PARAMS_DOC = """
         """
 
 
-class Port(namedtuple('Port', 'identifier')):
-    """Representation of a single port.
-
-    :param identifier: port identifier e.g. 'CNCA1'
-    """ + _AVAILABLE_PARAMS_DOC
-    
-    def __repr__(self):
-        return f"{self.__class__.__name__}({self.identifier!r})"
+class Com0comException(Exception):  
+    """Exception class for this package."""
 
 
 class PortPair(namedtuple('PortPair', 'a b')):
     """Representation of a pair of ports.
 
-    :param a: Port object representing port A
-    :param b: Port object representing port B
+    :param a: name of port A e.g. 'CNCA1'
+    :type a: str
+    :param b: name of port B e.g. 'CNCB1'
+    :type b: str
     """
 
     def __repr__(self):
@@ -62,7 +58,7 @@ class PortPair(namedtuple('PortPair', 'a b')):
     def pair_number(self):
         """Pair number; e.g for pair CNCA1/CNCB1, this would be `1`"""
 
-        return int(self.a.identifier.lstrip('CNCA'))
+        return int(self.a.lstrip('CNCA'))
 
 
 class Com0comBase(ABC):
@@ -71,19 +67,21 @@ class Com0comBase(ABC):
     """
 
     @abstractmethod
-    def install_pair(self, a_params: dict, b_params: dict) -> PortPair:
+    def install_pair(self, a_params: Dict[str, str], 
+                     b_params: Dict[str, str]) -> PortPair:
         """Run `install` command, which creates a port pair.
         
         :param a_params: dict of parameters for CNCA port
         :param b_params: dict of parameters for CNCB port
-        :returns: PortPair object representing the port pair
+        :returns: PortPair named tuple representing the port pair
         """ + _AVAILABLE_PARAMS_DOC
     
     @abstractmethod
     def remove_pair(self, port_pair: PortPair) -> None:
         """Run `remove` command, wich removes a port pair.
         
-        :param port_pair: PortPair representing the port pair
+        :param port_pair: PortPair or tuple of 2 strings representing the port 
+                          pair
         """
 
     @abstractmethod
@@ -95,29 +93,32 @@ class Com0comBase(ABC):
         """Run `enable all` command, which enables all ports."""
 
     @abstractmethod
-    def change_params(self, port: Port, params: dict) -> None:
+    def change_params(self, port: str, params: Dict[str, str]) -> None:
         """Run `change` command, which changes parameters for a given port.
         
-        :param port: Port object representing the port
+        :param port: port identifier e.g. 'CNCA1'
         :param params: dict of parameters to apply to specified port
         """ + _AVAILABLE_PARAMS_DOC
 
     @abstractmethod
-    def list_ports(self):
+    def list_ports(self) -> Dict[str, Dict[str, str]]:
         """Run `list` command, which retrieves all the ports and their
         parameters.
 
         Note: unlike the CLI, if a PortName is not set, that parameter won't be
-        included, rather than returning '-'.
+        included (rather than returning '-').
 
         :returns: a dict of port to a dict of parameters
-                  e.g. {Port('CNCA1'): {'EmuBR': 'no'}}
+                  e.g. {
+                           'CNCA1': {'EmuBR': 'no'},
+                           'CNCB1': {'PortName': 'COM1'}
+                        }
         """
 
-    def get_params(self, port: Port):
+    def get_params(self, port: str) -> Dict[str, str]:
         """Wrapper for `list` to return parameters for the specified port.
         
-        :param port: Port object
+        :param port: port name
         :returns: dict of parameters
         """
 
@@ -125,7 +126,8 @@ class Com0comBase(ABC):
     
     @abstractmethod
     def busynames(self, pattern: str) -> List[str]:
-        """Run `busynames` command, which lists ports matching the pattern.
+        """Run `busynames` command, which lists existing ports matching the 
+        pattern.
         
         :param pattern: pattern to check. '?' represents a single character, 
                         '*' represents 0 or more characters.
