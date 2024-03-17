@@ -12,8 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-20.04 # 20.04 supports all supported Python versions.
-          - macos-latest
+          - windows-latest
         python-version:
           - "3.6"
           - "3.7"
