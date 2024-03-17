@@ -34,7 +34,7 @@ class Com0comDummy(Com0comBase):
 
 class PortPairTestCase(TestCase):
     def test_pair_number(self):
-        pp = PortPair('CNCA1', 'CNCB1')
+        pp = PortPair(Port('CNCA1'), Port('CNCB1'))
         self.assertEqual(pp.pair_number, 1)
 
 
